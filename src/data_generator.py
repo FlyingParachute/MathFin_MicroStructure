@@ -3,7 +3,7 @@ import pandas as pd
 from scipy.stats import expon, gamma, powerlaw
 import matplotlib.pyplot as plt
 
-np.random.seed(42)
+np.random.seed(41)
 
 TOTAL_TIME = 32400
 NUM_LEVELS = 5
@@ -76,16 +76,27 @@ def simulate_lob_stylized_facts():
         elif event_type == 'M':
             opp_queues = ask_queues if side == 'bid' else bid_queues
             if opp_queues[0] > 0:
-                trade_size = min(size, opp_queues[0])
-                opp_queues[0] -= trade_size
-                if opp_queues[0] == 0 and np.random.random() < 0.7:
-                    mid_price += np.random.normal(0, 0.015)
-                    opp_queues.pop(0)
-                    opp_queues.append(gamma.rvs(a=2, scale=10))
-                    if side == 'bid':
-                        ask_prices = [mid_price + i * TICK_SIZE for i in range(1, NUM_LEVELS + 1)]
+                rem_size = size
+                while rem_size > 0 and opp_queues:
+                    available = opp_queues[0]
+                    if rem_size < available:
+                        opp_queues[0] -= rem_size
+                        rem_size = 0
                     else:
-                        bid_prices = [mid_price - i * TICK_SIZE for i in range(1, NUM_LEVELS + 1)]
+                        rem_size -= available
+                        opp_queues[0] = 0
+                        
+                        if np.random.random() < 0.7:
+                            if side == 'bid':
+                                mid_price = mid_price + 0.5 * TICK_SIZE
+                            else:
+                                mid_price = mid_price - 0.5 * TICK_SIZE
+                            if side == 'bid':
+                                ask_prices = [mid_price + i * TICK_SIZE for i in range(1, NUM_LEVELS + 1)]
+                            else:
+                                bid_prices = [mid_price - i * TICK_SIZE for i in range(1, NUM_LEVELS + 1)]
+                        # 在原地补充被耗尽的订单（基于gamma分布）
+                        opp_queues[0] = gamma.rvs(a=2, scale=10)
 
         events.append({
             'time': t,
@@ -148,7 +159,8 @@ plt.axvline(x=3, color='gray', linestyle='--', alpha=0.5)
 plt.axvline(x=6, color='gray', linestyle='--', alpha=0.5)
 plt.axvline(x=9, color='gray', linestyle='--', alpha=0.5)
 plt.tight_layout()
-plt.savefig('results/images/simul_mid_price_dynamics.png')
+#plt.savefig('results/images/simul_mid_price_dynamics.png')
+plt.show()
 
 resampled_times = np.arange(0, TOTAL_TIME + 1, 1)
 resampled_prices = stylized_data['mid_price'].reindex(resampled_times, method='ffill')
@@ -182,7 +194,8 @@ plt.ylabel('Annualized Volatility')
 plt.title('Rolling 10-Minute Volatility Over Trading Day')
 plt.legend()
 plt.grid(True)
-plt.savefig('results/images/simul_volatility.png')
+#plt.savefig('results/images/simul_volatility.png')
+plt.show()
 
-stylized_data.to_csv('data/simul_data.csv', index=False)
-rolling_vol.to_csv('data/simul_volatility.csv', index=False)
+#stylized_data.to_csv('data/simul_data.csv', index=False)
+#rolling_vol.to_csv('data/simul_volatility.csv', index=False)
