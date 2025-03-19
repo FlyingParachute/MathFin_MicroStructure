@@ -55,5 +55,6 @@ Our implementation adopts several metrics to evaluate the performance of the mod
 - Queue size distribution
 
 ## Data
-In this project, various parameters of different models can be adjusted. We experimented with many configurations, and the notebook presents only a subset of them. Some representative historical simulation results can be found in the following link:
+In this project, various parameters of different models can be adjusted. We experimented with many configurations, and the notebook presents only a subset of them. 
+Due to the large size, the dataset is not included in this repository. Some representative historical simulation results can be found in the following link:
 https://imperiallondon-my.sharepoint.com/:u:/g/personal/sw3121_ic_ac_uk/EQl4shBFR09JlDmY5PYO4T4B_PfFDueBeA6msNyKQThj-A?e=nal3IR
